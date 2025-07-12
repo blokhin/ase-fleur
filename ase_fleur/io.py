@@ -140,6 +140,7 @@ OUTXML_ADDITIONAL_TASKS = {
 }
 MAGMOMS_KEY = "magnetic_moments"
 MAGMOM_KEY = "total_magnetic_moment_cell"
+NOCO_KEY = "magnetic_vec_moments"
 FORCES_KEY = "force_atoms"
 
 
@@ -255,12 +256,21 @@ def read_fleur_outxml(fileobj: TextIO | BinaryIO | Path, index: int = -1, read_e
         "ibzkpts": kpoints_cartesian,
     }
 
+    non_collinear_magmoms = None
+
     if MAGMOM_KEY in results:
         magmoms = results[MAGMOMS_KEY]
-        if not isinstance(magmoms, list):
-            magmoms = [magmoms]
-        results_dict["magmoms"] = np.array(_per_type_to_per_atom(magmoms, equivalent_atoms))
-        results_dict["magmom"] = results[MAGMOM_KEY]
+        if magmoms is None:
+            non_collinear_magmoms = results.get(NOCO_KEY)
+        else:
+            if not isinstance(magmoms, list):
+                magmoms = [magmoms]
+            results_dict["magmoms"] = np.array(_per_type_to_per_atom(magmoms, equivalent_atoms))
+            results_dict["magmom"] = results[MAGMOM_KEY]
+
+    if non_collinear_magmoms:
+        # ASE has no systematic approach for spinors yet
+        structure.set_array("magmoms", np.array(_per_type_to_per_atom(non_collinear_magmoms, equivalent_atoms)))
 
     if FORCES_KEY in results:
         forces = [force for _, force in results[FORCES_KEY]]
