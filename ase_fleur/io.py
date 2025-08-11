@@ -334,7 +334,10 @@ def write_fleur_inpgen(
     -------
     """
 
-    atom_sites = [AtomSiteProperties(position=atom.position, symbol=atom.symbol, kind=atom.symbol) for atom in atoms]
+    if any(atom.magmom for atom in atoms):
+        atom_sites = [AtomSiteProperties(position=atom.position, symbol=atom.symbol, kind=atom.symbol, magnetic_moment=atom.magmom) for atom in atoms]
+    else:
+        atom_sites = [AtomSiteProperties(position=atom.position, symbol=atom.symbol, kind=atom.symbol) for atom in atoms]
 
     write_inpgen_file(
         atoms.cell,
