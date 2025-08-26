@@ -317,6 +317,24 @@ def _per_type_to_per_atom(data: list[Any], equiv_atoms: list[int]) -> list[Any]:
     return result
 
 
+def _numpy_to_python(value):
+    """
+    Converts numpy arrays or scalars to native Python types.
+
+    Args:
+        value: Either a numpy array or scalar value
+
+    Returns:
+        Native Python float representation of the input value
+    """
+    if isinstance(value, np.ndarray):
+        return value.tolist()
+    elif isinstance(value, (np.int32, np.float64)):
+        return float(value)
+    else:
+        return value
+
+
 @writer
 def write_fleur_inpgen(
     fileobj: TextIO | Path, atoms: Atoms, parameters: dict[str, Any] | None = None, **kwargs: Any
@@ -334,10 +352,10 @@ def write_fleur_inpgen(
     -------
     """
 
-    if any(atom.magmom for atom in atoms):
+    if any(any(atom.magmom) if hasattr(atom.magmom, '__iter__') else atom.magmom for atom in atoms):
         atom_sites = [
             AtomSiteProperties(
-                position=atom.position, symbol=atom.symbol, kind=atom.symbol, magnetic_moment=atom.magmom
+                position=atom.position, symbol=atom.symbol, kind=atom.symbol, magnetic_moment=_numpy_to_python(atom.magmom)
             )
             for atom in atoms
         ]
