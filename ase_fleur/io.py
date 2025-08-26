@@ -352,10 +352,13 @@ def write_fleur_inpgen(
     -------
     """
 
-    if any(any(atom.magmom) if hasattr(atom.magmom, '__iter__') else atom.magmom for atom in atoms):
+    if any(any(atom.magmom) if hasattr(atom.magmom, "__iter__") else atom.magmom for atom in atoms):
         atom_sites = [
             AtomSiteProperties(
-                position=atom.position, symbol=atom.symbol, kind=atom.symbol, magnetic_moment=_numpy_to_python(atom.magmom)
+                position=atom.position,
+                symbol=atom.symbol,
+                kind=atom.symbol,
+                magnetic_moment=_numpy_to_python(atom.magmom),
             )
             for atom in atoms
         ]
